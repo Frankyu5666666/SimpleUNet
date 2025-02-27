@@ -3,18 +3,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class SingleConv(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size=3, pad=1, dilation=1, match=True):
+    def __init__(self, in_channels, out_channels, kernel_size=3, pad=1, dilation=1):
         super().__init__()
-        if match:
-            assert in_channels == out_channels, "in_channels and out_channels must match!"
-            group = in_channels
-        else:
-            group = 1
         self.single_conv = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, groups=group, kernel_size=kernel_size, padding=pad, dilation=dilation, bias=False),
+            nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=pad, dilation=dilation, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True)
         )
+
     def forward(self, x):
         return self.single_conv(x)
 
@@ -43,14 +39,14 @@ class SimpleUNet(nn.Module):
         self.short_rate = short_rate
         self.adw = adw
         self.pad = self.dilation*(self.kernel_size-1)//2
-        self.seg_head = SingleConv(int(short_rate*stage_channels[0]), self.num_cls, 1, 0, 1, False)
+        self.seg_head = SingleConv(int(short_rate*stage_channels[0]), self.num_cls, 1, 0, 1)
 
         self.down = nn.MaxPool2d(2)
         self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
 
         self.en_layer0 = SingleConv(self.in_channels, stage_channels[0],
                              kernel_size=self.kernel_size, pad=self.pad,
-                             dilation=self.dilation, match=False)
+                             dilation=self.dilation)
 
         for i in range(1, self.depth):
             # layers = nn.ModuleList()
@@ -58,10 +54,10 @@ class SimpleUNet(nn.Module):
             for _ in range(num_blocks[i]-1):
                 layers.append(SingleConv(stage_channels[i-1], stage_channels[i-1],
                              kernel_size=self.kernel_size, pad=self.pad,
-                             dilation=self.dilation, match=False))
+                             dilation=self.dilation))
             layers.append(SingleConv(stage_channels[i-1], stage_channels[i],
                              kernel_size=self.kernel_size, pad=self.pad,
-                             dilation=self.dilation, match=False))
+                             dilation=self.dilation))
             setattr(self, f'en_layer{i}', nn.Sequential(*layers))
 
         # layers = nn.ModuleList()
@@ -69,7 +65,7 @@ class SimpleUNet(nn.Module):
             layers = []
             layers.append(SingleConv(stage_channels[i], int(self.short_rate*stage_channels[i]),
                              kernel_size=1, pad=0,
-                             dilation=1, match=False))
+                             dilation=1))
             setattr(self, f'short_layer{i}', nn.Sequential(*layers))
 
         re_stage_channels = stage_channels[::-1]
@@ -79,12 +75,12 @@ class SimpleUNet(nn.Module):
         layers = []
         layers.append(SingleConv(re_stage_channels[0], int(self.short_rate * re_stage_channels[0]),
                                  kernel_size=self.kernel_size, pad=self.pad,
-                                 dilation=self.dilation, match=False))
+                                 dilation=self.dilation))
 
         for _ in range(0, re_num_blocks[0] - 1):
             layers.append(SingleConv(int(self.short_rate * re_stage_channels[0]), int(self.short_rate * re_stage_channels[0]),
                                      kernel_size=self.kernel_size, pad=self.pad,
-                                     dilation=self.dilation, match=False))
+                                     dilation=self.dilation))
 
         self.bottleneck = nn.Sequential(*layers)
 
@@ -95,12 +91,12 @@ class SimpleUNet(nn.Module):
             layers.append(SingleConv(int(self.short_rate * (re_stage_channels[i-1] + re_stage_channels[i])),
                                      int(self.short_rate * re_stage_channels[i]),
                                      kernel_size=self.kernel_size, pad=self.pad,
-                                     dilation=self.dilation, match=False))
+                                     dilation=self.dilation))
 
             for _ in range(0, re_num_blocks[i]-1):
                 layers.append(SingleConv(int(self.short_rate*re_stage_channels[i]), int(self.short_rate*stage_channels[i]),
                              kernel_size=self.kernel_size, pad=self.pad,
-                             dilation=self.dilation, match=False))
+                             dilation=self.dilation))
             setattr(self, f'de_layer{i-1}', nn.Sequential(*layers))
             # layers.append(SingleConv(int(self.short_rate * re_stage_channels[i]),
             #                          int(self.short_rate * re_stage_channels[i+1]),
@@ -146,7 +142,7 @@ from thop import profile
 
 if __name__ == '__main__':
     input = torch.randn(1, 3, 256, 256).cuda()
-    model = HSUNet(in_channels=3, num_cls=2, dilation=2, stage_channels=[24, 24, 24, 24, 24], num_blocks=[1, 1, 1, 1, 1], short_rate=0.5, adw=False).cuda()
+    model = SimpleUNet(in_channels=3, num_cls=2, dilation=2, stage_channels=[24, 24, 24, 24, 24], num_blocks=[1, 2, 2, 2, 2], short_rate=0.5, adw=False).cuda()
     flops, params = profile(model, inputs=(input,))
     print(flops/1e9)
     print(params/1e6)

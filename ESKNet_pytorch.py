@@ -14,7 +14,7 @@ class SingleConv(nn.Module):
     def forward(self, x):
         return self.single_conv(x)
 
-from model.ESKNet.model_pytorch import SKConvnblockplus
+from ESKNet_pytorch import SKConvnblockplus
 
 class SimpleESKNet(nn.Module):
     def __init__(self, in_channels, num_cls, stage_channels=5 * [32], num_blocks=5 * [1],

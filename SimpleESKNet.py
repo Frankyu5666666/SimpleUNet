@@ -133,7 +133,7 @@ class SimpleESKNet(nn.Module):
 from thop import profile
 if __name__ == '__main__':
     input = torch.randn(1, 3, 256, 256).cuda()
-    model = SimpleESKNet(in_channels=3, num_cls=2, stage_channels=[16, 16, 16, 16, 16], num_blocks=[1, 1, 1, 1, 1], short_rate=0.5, adw=False).cuda()
+    model = SimpleESKNet(in_channels=3, num_cls=2, stage_channels=[16, 16, 16, 16, 16], num_blocks=[1, 1, 1, 1, 1], short_rate=0.5, adw=True).cuda()
     flops, params = profile(model, inputs=(input,))
     print(flops/1e9)
     print(params/1e6)

@@ -98,7 +98,7 @@ class SoOut(nn.Module):
         return outconv
 
 class ESKNet(nn.Module):
-    def __init__(self, input_channels=3, num_classes=2, dim=32,  deep=True, shortcut=False, pattern=1, mode=0):
+    def __init__(self, input_channels=3, num_classes=2, dim=32,  deep=True):
         super(ESKNet, self).__init__()
         self.deep = deep
         self.Conv1 = SKConvnblockplus(input_channels, dim)
@@ -197,3 +197,11 @@ class ESKNet(nn.Module):
         up4 = self.up4(up3, x1)
         out1 = self.outconv(up4)
         return out1
+
+from thop import profile
+if __name__ == '__main__':
+    input = torch.randn(1, 3, 256, 256).cuda()
+    model = ESKNet(input_channels=3, num_classes=2, dim=32,  deep=True).cuda()
+    flops, params = profile(model, inputs=(input,))
+    print(flops/1e9)
+    print(params/1e6)

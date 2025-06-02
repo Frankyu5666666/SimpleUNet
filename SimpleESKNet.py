@@ -19,6 +19,7 @@ from ESKNet_pytorch import SKConvnblockplus
 class SimpleESKNet(nn.Module):
     def __init__(self, in_channels, num_cls, stage_channels=5 * [32], num_blocks=5 * [1],
                  short_rate=0.5, adw=False):
+         #########
         "in_channels: the number of the input channels"
         "num_cls: the expected number of segmentation classes"
         "ks: kernel size"

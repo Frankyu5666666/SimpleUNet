@@ -20,8 +20,8 @@ class SimpleUNet(nn.Module):
         "num_cls: the expected number of segmentation classes"
         "ks: kernel size"
         "dilation: the dilation rate of convolution"
-        "stage_channels: the number of encoding stages"
-        "num_blocks: number of blocks with each encoding and decoding stage"
+        "stage_channels: the number output channels in encoding stages"
+        "num_blocks: number of blocks within each encoding and decoding stage"
         "short_rate: the shortcut rate of the shortcut features"
         "adw: whether to apply learnable attention weights to the shortcut features and the deep features for feature fusion"
         #########
@@ -137,3 +137,12 @@ class SimpleUNet(nn.Module):
 
         output = self.seg_head(x)
         return output
+
+
+from thop import profile
+if __name__ == '__main__':
+    input = torch.randn(1, 3, 256, 256).cuda()
+    model = SimpleUNet(in_channels=3, num_cls=2, stage_channels=[16, 16, 16, 16, 16], num_blocks=[1, 1, 1, 1, 1], short_rate=0.5, adw=False).cuda()
+    flops, params = profile(model, inputs=(input,))
+    print(flops/1e9)
+    print(params/1e6)

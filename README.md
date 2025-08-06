@@ -8,8 +8,8 @@ Also, the developed SimpleUNet can be simply advanced by replacing the common co
 
 If you found this work interesting or helpful, please cite:  
 @article{yu2025simple,  
-  title={Simple is what you need for efficient and accurate medical image segmentation},  
-  author={Yu, Xiang and Chen, Yayan and He, Guannan and Zeng, Qing and Qin, Yue and Liang, Meiling and Luo, Dandan and Liao, Yimei and Ren, Zeyu and Kang, Cheng and others},  
-  journal={arXiv preprint arXiv:2506.13415},  
-  year={2025}  
-}  
+        title={Simple is what you need for efficient and accurate medical image segmentation},  
+        author={Yu, Xiang and Chen, Yayan and He, Guannan and Zeng, Qing and Qin, Yue and Liang, Meiling and Luo, Dandan and Liao, Yimei and Ren, Zeyu and Kang, Cheng and others},  
+        journal={arXiv preprint arXiv:2506.13415},  
+        year={2025}  
+        }  
